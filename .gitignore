@@ -1,0 +1,14 @@
+node_modules
+
+
+dist/
+dist-min/
+
+*.env
+!config.env.example
+
+
+*.log
+
+
+pnpm-lock.yaml
