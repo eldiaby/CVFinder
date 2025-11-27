@@ -1,22 +1,26 @@
 {
-	"name": "cvfinder",
+	"name": "cvfinder-api",
 	"version": "1.0.0",
-	"description": "",
-	"main": "server.js",
+	"description": "Backend API for CVFinder – a simple HR candidate search platform",
+	"main": "dist/server.js",
+	"type": "commonjs",
 	"scripts": {
-		"dev": "ts-node-dev --respawn --transpile-only --watch src  src/server.ts",
+		"dev": "ts-node-dev --respawn --transpile-only --watch src src/server.ts",
 		"build": "npm run build:ts && npm run build:min",
 		"build:ts": "tsc",
-		"build:min": "esbuild dist/**/*.js --outdir=dist-min --platform=node --format=cjs --minify --sourcemap --outbase=dist",
+		"build:min": "esbuild dist/**/*.js --outdir=dist-min --platform=node --format=esm --minify --sourcemap --outbase=dist",
 		"start": "node dist/server.js",
+		"format": "biome format --write .",
+		"lint": "biome lint .",
 		"test": "vitest",
 		"test:watch": "vitest --watch",
 		"test:ui": "vitest --ui"
 	},
-	"keywords": [],
 	"author": "Eldiaby Hosny",
 	"license": "ISC",
-	"type": "commonjs",
+	"engines": {
+		"node": ">=20"
+	},
 	"dependencies": {
 		"argon2": "^0.44.0",
 		"compression": "^1.8.1",
