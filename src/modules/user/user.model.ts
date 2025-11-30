@@ -1,3 +1,4 @@
+import { hash } from "argon2";
 import mongoose from "mongoose";
 import type { IUser } from "../../@types/user.type";
 
@@ -5,71 +6,71 @@ const userSchema = new mongoose.Schema<IUser>(
 	{
 		name: {
 			type: String,
-			required: [true, "Name is required"],
 			trim: true,
+			required: [true, "User name is a required field"],
+			minlength: [3, "User name must be at least 3 characters"],
+			maxlength: [30, "User name must be shorter than 30 characters"],
 		},
-		// email: {
-		// 	type: String,
-		// 	required: [true, "Email is required"],
-		// 	unique: true,
-		// 	lowercase: true,
-		// },
+
+		email: {
+			type: String,
+			trim: true,
+			required: [true, "User email is a required field"],
+			minlength: [3, "User email must be at least 3 characters"],
+			maxlength: [50, "User email must be shorter than 50 characters"],
+			unique: true,
+			lowercase: true,
+			validate: {
+				validator: function (value: string) {
+					return /^[\w.-]+@[\w.-]+\.\w{2,}$/g.test(value);
+				},
+				message: "Invalid email format",
+			},
+		},
+
 		password: {
 			type: String,
-			required: [true, "Password is required"],
-			minlength: [6, "Password must be at least 6 characters long"],
+			required: [true, "Password is a required field"],
+			trim: true,
+			minlength: [8, "Password must be more than 8 characters"],
+			maxlength: [50, "Password must be less than 50 characters"],
+			validate: {
+				validator: function (value: string) {
+					const regex =
+						/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/g;
+					return regex.test(value);
+				},
+				message:
+					"Password must contain lowercase, uppercase, number, and special characters",
+			},
+		},
+		passwordConfirm: {
+			type: String,
+			trim: true,
+			minlength: [8, "Password confirm must be more than 8 characters"],
+			maxlength: [50, "Password confirm must be less than 50 characters"],
 		},
 		role: {
 			type: String,
-			enum: {
-				values: ["admin", "lawyer", "client"],
-				message: "Role must be one of: admin, lawyer, or client",
-			},
-			default: "client",
-		},
-		phone: {
-			type: String,
-			required: false,
-			validate: {
-				validator: (v: string) => /^(\+?\d{10,15})$/.test(v),
-				message: "Invalid phone number format",
-			},
-		},
-		isActive: {
-			type: Boolean,
-			default: false,
-		},
-
-		// Lawyer-specific fields
-		barNumber: {
-			type: String,
-			required: function (): boolean {
-				return this.role === "lawyer";
-			},
-			trim: true,
-			validate: {
-				validator: function (v: string) {
-					if (this.role === "lawyer") {
-						return /^\d{6}$/.test(v);
-					}
-					return true;
-				},
-				message: "Invalid bar number format",
-			},
-		},
-		barDegree: {
-			type: String,
-			required: function (): boolean {
-				return this.role === "lawyer";
-			},
-			enum: {
-				values: ["Trainee", "Primary", "Appeal", "Cassation"],
-				message:
-					"Bar degree must be one of: Trainee, Primary, Appeal, or Cassation",
-			},
+			required: true,
+			enum: ["user", "HR"],
+			default: "user",
 		},
 	},
 	{ timestamps: true },
 );
+
+userSchema.pre<IUser>(/save/g, async function () {
+	if (this.isModified("password")) return;
+	this.password = await hash(this.password);
+});
+
+userSchema.pre<IUser>(/save/g, function () {
+	if (this.password === this.passwordConfirm) {
+		this.passwordConfirm = undefined;
+	} else {
+		throw new Error(`Password must match password confirm`);
+	}
+});
 
 export const UserModel = mongoose.model<IUser>("User", userSchema);
