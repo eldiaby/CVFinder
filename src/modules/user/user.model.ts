@@ -10,6 +10,9 @@ const emailRegex = /^[\w.-]+@[\w.-]+\.\w{2,}$/g;
 const passwordRegex =
 	/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/g;
 
+const testRegex = (value: string, type: `email` | "password") =>
+	type === "email" ? emailRegex.test(value) : passwordRegex.test(value);
+
 const userSchema = new mongoose.Schema<IUser>(
 	{
 		name: {
@@ -29,7 +32,7 @@ const userSchema = new mongoose.Schema<IUser>(
 			unique: true,
 			lowercase: true,
 			validate: {
-				validator: (value: string) => emailRegex.test(value),
+				validator: (value: string) => testRegex(value, "email"),
 				message: "Invalid email format",
 			},
 		},
@@ -41,7 +44,7 @@ const userSchema = new mongoose.Schema<IUser>(
 			minlength: [8, "Password must be more than 8 characters"],
 			maxlength: [50, "Password must be less than 50 characters"],
 			validate: {
-				validator: (value: string) => passwordRegex.test(value),
+				validator: (value: string) => testRegex(value, "password"),
 				message:
 					"Password must contain lowercase, uppercase, number, and special characters",
 			},
