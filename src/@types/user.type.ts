@@ -1,11 +1,20 @@
 import type { Document } from "mongoose";
 
-export interface IUser extends Document {
+export enum UserRole {
+	ADMIN = `admin`,
+	USER = `user`,
+	HR = `HR`,
+}
+
+export interface IUser {
 	name: string;
 	email: string;
 	password: string;
 	passwordConfirm?: string;
-	role: "user" | "HR";
+	role: UserRole;
+	CV?: string;
 	createdAt?: Date;
 	updatedAt?: Date;
 }
+
+export interface IUserDocument extends IUser, Document {}

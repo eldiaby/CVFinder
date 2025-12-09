@@ -1,6 +1,10 @@
 import { hash } from "argon2";
 import mongoose from "mongoose";
-import type { IUser } from "../../@types/user.type";
+import {
+	type IUser,
+	type IUserDocument,
+	UserRole,
+} from "../../@types/user.type";
 
 const userSchema = new mongoose.Schema<IUser>(
 	{
@@ -53,19 +57,28 @@ const userSchema = new mongoose.Schema<IUser>(
 		role: {
 			type: String,
 			required: true,
-			enum: ["user", "HR"],
-			default: "user",
+			enum: {
+				values: Object.values(UserRole),
+				message: "User role is not one of the list",
+			},
+			default: UserRole.USER,
+		},
+		CV: {
+			type: String,
+			required: function (): boolean {
+				return this.role === UserRole.USER;
+			},
 		},
 	},
 	{ timestamps: true },
 );
 
-userSchema.pre<IUser>(/save/g, async function () {
+userSchema.pre<IUserDocument>(/save/g, async function () {
 	if (this.isModified("password")) return;
 	this.password = await hash(this.password);
 });
 
-userSchema.pre<IUser>(/save/g, function () {
+userSchema.pre<IUserDocument>(/save/g, function () {
 	if (this.password === this.passwordConfirm) {
 		this.passwordConfirm = undefined;
 	} else {
