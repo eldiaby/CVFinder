@@ -5,12 +5,9 @@ import {
 	type IUserDocument,
 	UserRole,
 } from "../../@types/user.type";
+import { emailRegex, passwordRegex } from "./../../constants/regex";
 
-const emailRegex = /^[\w.-]+@[\w.-]+\.\w{2,}$/g;
-const passwordRegex =
-	/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/g;
-
-const testRegex = (value: string, type: `email` | "password") =>
+const testRegex = (value: string, type: `email` | "password"): boolean =>
 	type === "email" ? emailRegex.test(value) : passwordRegex.test(value);
 
 const userSchema = new mongoose.Schema<IUser>(
