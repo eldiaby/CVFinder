@@ -1,4 +1,5 @@
 import compression from "compression";
+import cookieParser from "cookie-parser";
 import express from "express";
 import pino from "pino";
 import pinoHttp from "pino-http";
@@ -9,6 +10,7 @@ export const app = express();
 
 app.use(express.json());
 app.use(compression());
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
 // Logger only in development
 if (process.env.NODE_ENV === "development") {

@@ -1,4 +1,4 @@
-import { hash } from "argon2";
+import { hash, verify } from "argon2";
 import mongoose from "mongoose";
 import {
 	type IUser,
@@ -73,15 +73,19 @@ const userSchema = new mongoose.Schema<IUser>(
 
 userSchema.pre<IUserDocument>(/save/g, async function () {
 	if (this.isModified("password")) return;
-	this.password = await hash(this.password);
-});
 
-userSchema.pre<IUserDocument>(/save/g, function () {
 	if (this.password === this.passwordConfirm) {
+		this.password = await hash(this.password);
 		this.passwordConfirm = undefined;
 	} else {
 		throw new Error(`Password must match password confirm`);
 	}
 });
+
+userSchema.methods.comparePassword = async function (
+	password: string,
+): Promise<boolean> {
+	return await verify(this.password, password);
+};
 
 export const UserModel = mongoose.model<IUser>("User", userSchema);
